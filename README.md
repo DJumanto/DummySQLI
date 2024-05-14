@@ -3,9 +3,10 @@
 ## Topik Pembelajaran
 - [Basic SQL Injection](#introduction-to-sql-injection-and-basic-sql-injection)
 - [SQL Injection using Union Method](#sql-injection-using-union-method)
-- [Blind SQL Injection](#)
-- [Time Based SQL Injection](#)
-- [SQL Injection Mitigation](#)
+- [Blind SQL Injection](#blind-sql-injection)
+- [Time Based SQL Injection](#time-based-sql-injection)
+- [Condition Based Blind SQL Injection](#condition-based-blind-sql-injection)
+- [SQL Injection Mitigation](#sql-injection-mitigation)
 
 ## Mohon Dibaca Sebelum Lanjut
 **&#9888;** **Peringatan:** Segala bentuk serangan _SQL Injection_ tanpa izin pada pemilik layanan/sistem dapat dikenakan **sanksi pidana yang serius**. Segala informasi yang dipaparkan di sini **hanya untuk tujuan pembelajaran** dan **tidak boleh** digunakan untuk aktivitas ilegal.
@@ -186,7 +187,7 @@ Kira-kira berikut hasil query akhirnya:
 SELECT * FROM products WHERE id=984 AND IF(SUBSTRING((SELECT password from users WHERE user='admin'),1,1)='a',SLEEP(5),0)
 ```
 
-Apabila hasil dari eksfiltrasi data itu valid, maka query akan disleep selama beberapa detik sebelum selesai. Lakukan teknik ini berungkali untuk setiap lengthnya sehingga kalian bisa mendapatkan semua data ada.
+Apabila hasil dari eksfiltrasi data itu valid, maka query akan disleep selama beberapa detik sebelum selesai. Lakukan teknik ini berungkali untuk setiap lengthnya sehingga kalian bisa mendapatkan semua data yang ada.
 
 Perlu diperhatikan bahwa perintah sql bisa berbeda-beda setiap jenis databasenya, untuk sehingga kalian perlu menyesuaikan perintahnya dengan database yang dimiliki oleh sistem.
 
@@ -196,7 +197,7 @@ Perlu diperhatikan bahwa perintah sql bisa berbeda-beda setiap jenis databasenya
 Condition Based Blind SQL Injection ini bisa dilakukan dengan kalian mengetahui apakah hasil dari query tersebut valid atau tidak. Bisa dengan cara apabila hasil query valid, maka ada kondisi yang ter-reflect di website, sebaliknya, maka hasilnya tidak akan tampil.
 
 Lihatlah kode Backend berikut:
-```js
+```javascript
 //Kode Backend
 app.get("/searchcookies", isAuthenticated, async (req, res, next) => {
   cookies = req.query.cookies;
@@ -218,7 +219,7 @@ app.get("/searchcookies", isAuthenticated, async (req, res, next) => {
 ```
 
 Frontend:
-```js
+```javascript
 //Kode Frontend
 <!DOCTYPE html>
 <html lang="en">
@@ -277,12 +278,54 @@ Ada beberapa tahapan yang disarankan untuk kalian lakukan pada implementasi blin
 3. Ketahui panjang dari data yang mau kalian ambil. (atau cukup iterasi sampai kembali ke karakter yang pertama kali digunakan untuk menebak)
 4. Ekstrak datanya.
 
+
+### Cheatsheet SQL Injection
+[Cheat Sheet by portswigger](https://portswigger.net/web-security/sql-injection/cheat-sheet)
+
+### Automation Tools to Check SQL Injection
+[SQLMAP](https://github.com/sqlmapproject/sqlmap)
+
 ## SQL Injection Mitigation
 
 SQL Injection merupakan salah satu kelemahan yang memiliki dampak besar tetapi cukup mudah untuk diatasi. Beberapa solusi yang bisa dilakukan adalah:
 
 ### Lakukan Sanitasi Pada User Input
 Ini merupakan cara manual yang bisa kalian lakukan, sesederhan alakukan sanitasi pada user input, seperti menambahkan escape string dan blacklisting input dari user sehingga string yang masuk ke query akan ditangani selayaknya sebuah string, sehingga tidak tereksekusi.
+
+Contoh fungsi sanitasi yang bisa dipakai pada beberapa bahasa pemrograman:
+
+#### PHP
+
+1. ``mysqli_real_escape_string()`` - Escapes special characters in a string for use in an SQL statement.
+2. ``PDO::quote()`` - Quotes a string for use in a query.
+3. ``htmlspecialchars()`` - Converts special characters to HTML entities.
+4. ``filter_var()`` - Filters a variable with a specified filter (e.g., FILTER_SANITIZE_STRING).
+5. ``addslashes()`` - Adds backslashes before certain characters in a string.
+6. ``strip_tags()`` - Strips HTML and PHP tags from a string.
+
+#### JavaScript
+1. ``encodeURIComponent()`` - Encodes a URI component.
+2. ``escape()`` - Encodes a string (deprecated, but still in use).
+3. ``DOMPurify.sanitize()`` (with the DOMPurify library) - Sanitizes HTML and prevents XSS.
+sanitize-html (npm package) - Library to sanitize HTML.
+4. ``validator.escape()`` (with the validator npm package) - Escapes input to make it safe for inclusion in HTML.
+
+#### Python
+1. ``str.encode('utf-8', 'ignore')`` - Encodes a string using the specified encoding.
+2. ``html.escape()`` - Escapes special characters to HTML-safe sequences.
+3. ``cgi.escape()`` - Escapes special characters to HTML-safe sequences (Python 2, deprecated in Python 3).
+4. ``urllib.parse.quote()`` - Percent-encodes a string for URL components.
+5. ``bleach.clean()`` - Sanitizes an HTML fragment and prevents XSS (using the Bleach library).
+6. ``markupsafe.escape()`` - Escapes strings for safe HTML and XML.
+
+#### Golang
+1. ``html.EscapeString()`` - Escapes special characters to HTML-safe sequences.
+2. ``url.QueryEscape()`` - Escapes a string so it can be safely placed inside a URL query.
+3. ``sql.DB.Exec() / sql.DB.Query()`` with parameterized queries - Prevents SQL injection.
+4. ``template.HTMLEscapeString()`` - Escapes a string for HTML.
+5. ``template.JSEscapeString()`` - Escapes a string for 
+JavaScript.
+
 
 ### Gunakan Framework
 Framework menjadi cara otomatis kalian dalam melakukan sanitasi user input. ORM pada framework kebanyakan telah melakukan sanitasi pada user input (selama digunakan sesuai fungsi seharusnya). Sehingga kalian tidak perlu repot-repot melakukan blacklisting atau sanitasi. 
